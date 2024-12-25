@@ -1,0 +1,236 @@
+substitutions:
+  name: esp32-bluetooth-proxy-8d0224
+  friendly_name: Bluetooth Proxy 8d0224
+packages:
+  esphome.bluetooth-proxy: github://esphome/bluetooth-proxies/esp32-generic/esp32-generic.yaml@main
+esphome:
+  name: ${name}
+  name_add_mac_suffix: false
+  friendly_name: ${friendly_name}
+api:
+  encryption:
+    key: iSjDNzULJb+gqHN03+BI/fACnxtn38wboBGeppM/aYw=
+
+external_components:
+  - source: github://carlosgs/esphome@patch-39
+    components: [mpu6050]
+  - source: github://Fabian-Schmidt/esphome-victron_ble
+
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+
+
+#smartshunt
+victron_ble:
+  - id: MySmartShunt
+    mac_address: "e2:26:de:ce:e4:94"    
+    bindkey: "0108be447c4dfc791a81471ee4d12744"
+
+esp32_ble_tracker:
+  scan_parameters:
+    interval: 1100ms
+    window: 1100ms
+
+
+
+
+  on_ble_advertise:
+    # RR
+    - mac_address: !secret rr_mac 
+      then:
+        - lambda: |-
+            for (auto data : x.get_manufacturer_datas()) {
+              const char *hexstring = data.uuid.to_string().substr(2,2).c_str();
+              const float voltage = (float) strtol(hexstring, NULL, 16) * 0.1;
+              const int pressure = data.data[1] << 8 | data.data[2];
+
+              int temp = data.data[0];
+              if (temp > 128) { temp = temp - 256; }
+
+              id(ble_rr_temp).publish_state(temp);
+              id(ble_rr_press).publish_state((float) pressure * 0.0058);
+              id(ble_rr_batt).publish_state(voltage);
+            }
+
+    # RL
+    - mac_address: !secret rl_mac 
+      then:
+        - lambda: |-
+            for (auto data : x.get_manufacturer_datas()) {
+              const char *hexstring = data.uuid.to_string().substr(2,2).c_str();
+              const float voltage = (float) strtol(hexstring, NULL, 16) * 0.1;
+              const int pressure = data.data[1] << 8 | data.data[2];
+
+              int temp = data.data[0];
+              if (temp > 128) { temp = temp - 256; }
+
+              id(ble_rl_temp).publish_state(temp);
+              id(ble_rl_press).publish_state((float) pressure * 0.0058);
+              id(ble_rl_batt).publish_state(voltage);
+            }
+
+    # FR
+    - mac_address: !secret fr_mac 
+      then:
+        - lambda: |-
+            for (auto data : x.get_manufacturer_datas()) {
+              const char *hexstring = data.uuid.to_string().substr(2,2).c_str();
+              const float voltage = (float) strtol(hexstring, NULL, 16) * 0.1;
+              const int pressure = data.data[1] << 8 | data.data[2];
+
+              int temp = data.data[0];
+              if (temp > 128) { temp = temp - 256; }
+
+              id(ble_fr_temp).publish_state(temp);
+              id(ble_fr_press).publish_state((float) pressure * 0.0058);
+              id(ble_fr_batt).publish_state(voltage);
+            }
+
+    # FL
+    - mac_address: !secret fl_mac 
+      then:
+        - lambda: |-
+            for (auto data : x.get_manufacturer_datas()) {
+              const char *hexstring = data.uuid.to_string().substr(2,2).c_str();
+              const float voltage = (float) strtol(hexstring, NULL, 16) * 0.1;
+              const int pressure = data.data[1] << 8 | data.data[2];
+
+              int temp = data.data[0];
+              if (temp > 128) { temp = temp - 256; }
+
+              id(ble_fl_temp).publish_state(temp);
+              id(ble_fl_press).publish_state((float) pressure * 0.0058);
+              id(ble_fl_batt).publish_state(voltage);
+            }
+  
+sensor:
+
+
+
+
+
+
+  - platform: template
+    name: "FL Temperature"
+    id: ble_fl_temp
+    unit_of_measurement: "°C"
+    icon: "mdi:thermometer"
+    device_class: "temperature"
+    state_class: "measurement"
+  - platform: template
+    name: "FL Pressure"
+    id: ble_fl_press
+    unit_of_measurement: "bar"
+    icon: "mdi:gauge"
+    device_class: "pressure"
+    state_class: "measurement"
+  - platform: template
+    name: "FL Voltage"
+    id: ble_fl_batt
+    unit_of_measurement: "V"
+    icon: "mdi:battery"
+    device_class: "voltage"
+    state_class: "measurement"
+    
+  - platform: template
+    name: "FR Temperature"
+    id: ble_fr_temp
+    unit_of_measurement: "°C"
+    icon: "mdi:thermometer"
+    device_class: "temperature"
+    state_class: "measurement"
+  - platform: template
+    name: "FR Pressure"
+    id: ble_fr_press
+    unit_of_measurement: "bar"
+    icon: "mdi:gauge"
+    device_class: "pressure"
+    state_class: "measurement"
+  - platform: template
+    name: "FR Voltage"
+    id: ble_fr_batt
+    unit_of_measurement: "V"
+    icon: "mdi:battery"
+    device_class: "voltage"
+    state_class: "measurement"
+    
+  - platform: template
+    name: "RL Temperature"
+    id: ble_rl_temp
+    unit_of_measurement: "°C"
+    icon: "mdi:thermometer"
+    device_class: "temperature"
+    state_class: "measurement"
+  - platform: template
+    name: "RL Pressure"
+    id: ble_rl_press
+    unit_of_measurement: "bar"
+    icon: "mdi:gauge"
+    device_class: "pressure"
+    state_class: "measurement"
+  - platform: template
+    name: "RL Voltage"
+    id: ble_rl_batt
+    unit_of_measurement: "V"
+    icon: "mdi:battery"
+    device_class: "voltage"
+    state_class: "measurement"
+    
+  - platform: template
+    name: "RR Temperature"
+    id: ble_rr_temp
+    unit_of_measurement: "°C"
+    icon: "mdi:thermometer"
+    device_class: "temperature"
+    state_class: "measurement"
+  - platform: template
+    name: "RR Pressure"
+    id: ble_rr_press
+    unit_of_measurement: "bar"
+    icon: "mdi:gauge"
+    device_class: "pressure"
+    state_class: "measurement"
+  - platform: template
+    name: "RR Voltage"
+    id: ble_rr_batt
+    unit_of_measurement: "V"
+    icon: "mdi:battery"
+    device_class: "voltage"
+    state_class: "measurement"
+
+  # MySmartShunt
+  - platform: victron_ble
+    victron_ble_id: MySmartShunt
+    name: "Time remaining"
+    type: TIME_TO_GO
+  - platform: victron_ble
+    victron_ble_id: MySmartShunt
+    name: "Battery voltage"
+    type: BATTERY_VOLTAGE
+  - platform: victron_ble
+    victron_ble_id: MySmartShunt
+    name: "Starter Battery"
+    # BAUX_VOLTAGE or MID_VOLTAGE or TEMPERATURE.
+    # Depending on configuration of SmartShunt
+    type: AUX_VOLTAGE
+  - platform: victron_ble
+    victron_ble_id: MySmartShunt
+    name: "Current"
+    type: BATTERY_CURRENT
+  - platform: victron_ble
+    victron_ble_id: MySmartShunt
+    name: "Consumed Ah"
+    type: CONSUMED_AH
+  - platform: victron_ble
+    victron_ble_id: MySmartShunt
+    name: "State of charge"
+    type: STATE_OF_CHARGE
+
+binary_sensor:
+  - platform: victron_ble
+    victron_ble_id: MySmartShunt
+    name: "Battery has Alarm"
+    type: ALARM
