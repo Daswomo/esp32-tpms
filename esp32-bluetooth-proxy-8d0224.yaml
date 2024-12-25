@@ -8,26 +8,16 @@ esphome:
   name_add_mac_suffix: false
   friendly_name: ${friendly_name}
 api:
-  encryption:
-    key: iSjDNzULJb+gqHN03+BI/fACnxtn38wboBGeppM/aYw=
 
 external_components:
   - source: github://carlosgs/esphome@patch-39
     components: [mpu6050]
-  - source: github://Fabian-Schmidt/esphome-victron_ble
 
 
 wifi:
   ssid: !secret wifi_ssid
   password: !secret wifi_password
 
-
-
-#smartshunt
-victron_ble:
-  - id: MySmartShunt
-    mac_address: "e2:26:de:ce:e4:94"    
-    bindkey: "0108be447c4dfc791a81471ee4d12744"
 
 esp32_ble_tracker:
   scan_parameters:
@@ -107,12 +97,6 @@ esp32_ble_tracker:
             }
   
 sensor:
-
-
-
-
-
-
   - platform: template
     name: "FL Temperature"
     id: ble_fl_temp
@@ -200,37 +184,3 @@ sensor:
     icon: "mdi:battery"
     device_class: "voltage"
     state_class: "measurement"
-
-  # MySmartShunt
-  - platform: victron_ble
-    victron_ble_id: MySmartShunt
-    name: "Time remaining"
-    type: TIME_TO_GO
-  - platform: victron_ble
-    victron_ble_id: MySmartShunt
-    name: "Battery voltage"
-    type: BATTERY_VOLTAGE
-  - platform: victron_ble
-    victron_ble_id: MySmartShunt
-    name: "Starter Battery"
-    # BAUX_VOLTAGE or MID_VOLTAGE or TEMPERATURE.
-    # Depending on configuration of SmartShunt
-    type: AUX_VOLTAGE
-  - platform: victron_ble
-    victron_ble_id: MySmartShunt
-    name: "Current"
-    type: BATTERY_CURRENT
-  - platform: victron_ble
-    victron_ble_id: MySmartShunt
-    name: "Consumed Ah"
-    type: CONSUMED_AH
-  - platform: victron_ble
-    victron_ble_id: MySmartShunt
-    name: "State of charge"
-    type: STATE_OF_CHARGE
-
-binary_sensor:
-  - platform: victron_ble
-    victron_ble_id: MySmartShunt
-    name: "Battery has Alarm"
-    type: ALARM
